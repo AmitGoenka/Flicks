@@ -19,7 +19,6 @@ The following **optional** features are implemented:
 * [x] User can **pull-to-refresh** popular stream to get the latest movies.
 * [x] Display a nice default [placeholder graphic](http://guides.codepath.com/android/Displaying-Images-with-the-Picasso-Library#configuring-picasso) for each image during loading.
 * [x] Improved the user interface through styling and coloring.
-* [x] For popular movies (i.e. a movie voted for more than 5 stars), the full backdrop image is displayed. Otherwise, a poster image, the movie title, and overview is listed. Use Heterogeneous ListViews and use different ViewHolder layout files for popular movies and less popular ones.
 
 The following **bonus** features are implemented:
 
