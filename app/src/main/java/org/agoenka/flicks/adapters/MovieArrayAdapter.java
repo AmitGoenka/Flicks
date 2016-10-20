@@ -153,20 +153,22 @@ public class MovieArrayAdapter extends ArrayAdapter<Movie> {
                     .error(R.mipmap.ic_launcher)
                     .transform(new RoundedCornersTransformation(10, 10))
                     .into(viewHolder.ivImage);
-            viewHolder.ivPlayerIcon.setVisibility(View.VISIBLE);
-            setOnItemClickListener(viewHolder.ivPlayerIcon, movie);
+            initPlayerIcon(viewHolder, movie);
         } else {
             picasso.load(R.mipmap.ic_launcher)
                     .into(viewHolder.ivImage);
         }
     }
 
-    private void setOnItemClickListener(View view, final Movie selectedMovie) {
-        view.setOnClickListener(new View.OnClickListener() {
+    private void initPlayerIcon(ViewHolderPopular viewHolder, Movie movie) {
+        viewHolder.ivPlayerIcon.setTag(movie);
+        viewHolder.ivPlayerIcon.setVisibility(View.VISIBLE);
+        viewHolder.ivPlayerIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Movie movie = (Movie) v.getTag();
                 Intent intent = new Intent(getContext(), YoutubePlayerActivity.class);
-                intent.putExtra("selectedMovie", selectedMovie);
+                intent.putExtra("selectedMovie", movie);
                 getContext().startActivity(intent);
             }
         });
