@@ -1,9 +1,20 @@
 package org.agoenka.flicks.network;
 
+import android.util.Log;
+
+import org.agoenka.flicks.models.Video;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.List;
+
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Author: agoenka
@@ -65,6 +76,20 @@ public class MovieDbClient {
                 .url(getVideosUrl(movieId))
                 .build();
         execute(request, callback);
+    }
+
+    public static Video getVideo (Response response) {
+        try {
+            // Read data on the worker thread
+            String responseData = response.body().string();
+            // extracting the video results from the json response
+            JSONArray videoJsonResults = new JSONObject(responseData).getJSONArray("results");
+            List<Video> videos = Video.fromJsonArray(videoJsonResults);
+            return Video.findVideo(videos, "Trailer", 0);
+        } catch (JSONException | IOException e) {
+            Log.d("DEBUG", e.getMessage());
+        }
+        return null;
     }
 
 }

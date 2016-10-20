@@ -29,6 +29,6 @@ public final class PicassoUtils {
     }
 
     public static boolean isValidImagePath (String imagePath) {
-        return imagePath != null && imagePath.length() > 0 /*&& !"null".equalsIgnoreCase(imagePath.trim())*/;
+        return imagePath != null && imagePath.length() > 0 && !"null".equalsIgnoreCase(imagePath.trim());
     }
 }

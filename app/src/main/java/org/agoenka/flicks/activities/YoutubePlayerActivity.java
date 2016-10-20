@@ -13,13 +13,8 @@ import org.agoenka.flicks.R;
 import org.agoenka.flicks.models.Movie;
 import org.agoenka.flicks.models.Video;
 import org.agoenka.flicks.network.MovieDbClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,7 +26,6 @@ import static org.agoenka.flicks.network.NetworkUtils.YOUTUBE_API_KEY;
 
 public class YoutubePlayerActivity extends YouTubeBaseActivity {
 
-    List<Video> videos;
     Video video;
 
     @BindView(R.id.ytPlayer) YouTubePlayerView playerView;
@@ -42,7 +36,6 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
         setContentView(R.layout.activity_youtube_player);
         ButterKnife.bind(this);
 
-        videos = new ArrayList<>();
         video = null;
 
         if (getIntent() != null) {
@@ -70,29 +63,19 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
                         }
                     });
                 } else {
-                    try {
-                        // Read data on the worker thread
-                        String responseData = response.body().string();
-                        // extracting the video results from the json response
-                        JSONArray videoJsonResults = new JSONObject(responseData).getJSONArray("results");
-                        videos = Video.fromJsonArray(videoJsonResults);
-                        video = Video.findVideo(videos, "Trailer", 0);
-
-                        // Run view-related code back on the main thread
-                        YoutubePlayerActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (video == null) {
-                                    Toast.makeText(YoutubePlayerActivity.this, "The requested video is not available!", Toast.LENGTH_SHORT).show();
-                                }
-                                else {
-                                    initYoutubePlayer();
-                                }
+                    video = MovieDbClient.getVideo(response);
+                    // Run view-related code back on the main thread
+                    YoutubePlayerActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (video == null) {
+                                Toast.makeText(YoutubePlayerActivity.this, "The requested video is not available!", Toast.LENGTH_SHORT).show();
                             }
-                        });
-                    } catch (JSONException e) {
-                        Log.d("DEBUG", e.getMessage());
-                    }
+                            else {
+                                initYoutubePlayer();
+                            }
+                        }
+                    });
                 }
             }
 

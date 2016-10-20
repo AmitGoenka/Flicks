@@ -83,21 +83,21 @@ public class MovieActivity extends AppCompatActivity {
             new MovieDbClient().getNowPlayingMovies(new Callback() {
                 @Override
                 public void onResponse(Call call, final Response response) throws IOException {
-                    if (!response.isSuccessful()) {
-                        MovieActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Log.d("DEBUG", response.body().string());
-                                    Log.d("DEBUG", String.format("Response Status Code: %s", response.code()));
-                                    Toast.makeText(MovieActivity.this, "The request to fetch movies was unsuccessful!", Toast.LENGTH_SHORT).show();
-                                } catch (IOException e) {
-                                    Log.d("DEBUG", e.getMessage());
+                    try {
+                        if (!response.isSuccessful()) {
+                            MovieActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Log.d("DEBUG", response.body().string());
+                                        Log.d("DEBUG", String.format("Response Status Code: %s", response.code()));
+                                        Toast.makeText(MovieActivity.this, "The request to fetch movies was unsuccessful!", Toast.LENGTH_SHORT).show();
+                                    } catch (IOException e) {
+                                        Log.d("DEBUG", e.getMessage());
+                                    }
                                 }
-                            }
-                        });
-                    } else {
-                        try {
+                            });
+                        } else {
                             // Read data on the worker thread
                             String responseData = response.body().string();
                             // extracting the movie results from the json response
@@ -113,9 +113,9 @@ public class MovieActivity extends AppCompatActivity {
                                     Log.d("DEBUG", movies.toString());
                                 }
                             });
-                        } catch (JSONException e) {
-                            Log.d("DEBUG", e.getMessage());
                         }
+                    } catch (JSONException e) {
+                        Log.d("DEBUG", e.getMessage());
                     }
                 }
 

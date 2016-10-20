@@ -34,7 +34,6 @@ import static org.agoenka.flicks.models.Movie.isPopular;
 public class MovieArrayAdapter extends ArrayAdapter<Movie> {
 
     private Picasso picasso;
-    private Movie movie;
 
     private static abstract class ViewHolder {}
 
@@ -92,7 +91,7 @@ public class MovieArrayAdapter extends ArrayAdapter<Movie> {
         int viewType = getItemViewType(position);
 
         // Get the data item for this position
-        movie = getItem(position);
+        Movie movie = getItem(position);
 
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
@@ -127,27 +126,28 @@ public class MovieArrayAdapter extends ArrayAdapter<Movie> {
 
     private void updateViewForNormalMovie (View convertView, Movie movie) {
         ViewHolderNormal viewHolder = (ViewHolderNormal) convertView.getTag();
-        viewHolder.ivImage.setImageResource(0);
 
         viewHolder.tvTitle.setText(movie.getOriginalTitle());
         viewHolder.tvOverview.setText(movie.getOverview());
 
+        if (picasso == null) picasso = PicassoUtils.newInstance(getContext());
         if (PicassoUtils.isValidImagePath(movie.getPosterPath())) {
-            if (picasso == null) picasso = PicassoUtils.newInstance(getContext());
             picasso.load(movie.getPosterPath("w500"))
                     .placeholder(R.drawable.placeholder_large)
                     .error(R.mipmap.ic_launcher)
                     .transform(new RoundedCornersTransformation(10, 10))
                     .into(viewHolder.ivImage);
+        } else {
+            picasso.cancelRequest(viewHolder.ivImage);
+            viewHolder.ivImage.setImageDrawable(null);
         }
     }
 
     private void updateViewForPopularMovie (View convertView, Movie movie) {
         ViewHolderPopular viewHolder = (ViewHolderPopular) convertView.getTag();
-        viewHolder.ivImage.setImageResource(0);
 
+        if (picasso == null) picasso = PicassoUtils.newInstance(getContext());
         if (PicassoUtils.isValidImagePath(movie.getBackdropPath())) {
-            if (picasso == null) picasso = PicassoUtils.newInstance(getContext());
             picasso.load(movie.getBackdropPath("w780"))
                     .placeholder(R.drawable.placeholder_large)
                     .error(R.mipmap.ic_launcher)
@@ -155,6 +155,9 @@ public class MovieArrayAdapter extends ArrayAdapter<Movie> {
                     .into(viewHolder.ivImage);
             viewHolder.ivPlayerIcon.setVisibility(View.VISIBLE);
             setOnItemClickListener(viewHolder.ivPlayerIcon, movie);
+        } else {
+            picasso.load(R.mipmap.ic_launcher)
+                    .into(viewHolder.ivImage);
         }
     }
 
