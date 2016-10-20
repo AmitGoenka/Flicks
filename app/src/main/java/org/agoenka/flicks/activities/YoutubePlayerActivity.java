@@ -2,6 +2,7 @@ package org.agoenka.flicks.activities;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
@@ -12,6 +13,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.agoenka.flicks.R;
 import org.agoenka.flicks.models.Movie;
 import org.agoenka.flicks.models.Video;
+import org.agoenka.flicks.network.MovieDbClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,10 +25,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
-import static org.agoenka.flicks.utils.NetworkUtils.YOUTUBE_API_KEY;
-import static org.agoenka.flicks.utils.NetworkUtils.getClient;
-import static org.agoenka.flicks.utils.NetworkUtils.getParams;
-import static org.agoenka.flicks.utils.NetworkUtils.getVideosUrl;
+import static org.agoenka.flicks.network.NetworkUtils.YOUTUBE_API_KEY;
 
 public class YoutubePlayerActivity extends YouTubeBaseActivity {
 
@@ -51,7 +50,7 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
     }
 
     private void fetchVideos(long movieId) {
-        getClient().get(getVideosUrl(movieId), getParams(), new JsonHttpResponseHandler() {
+        new MovieDbClient().getVideos(movieId, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 JSONArray videoJsonResults;
@@ -60,7 +59,12 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
                     videoJsonResults = response.getJSONArray("results");
                     videos = Video.fromJsonArray(videoJsonResults);
                     video = Video.findVideo(videos, "Trailer", 0);
-                    initYoutubePlayer();
+                    if (video == null) {
+                        Toast.makeText(YoutubePlayerActivity.this, "The requested video is not available!", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        initYoutubePlayer();
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -69,6 +73,7 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 super.onFailure(statusCode, headers, responseString, throwable);
+                Toast.makeText(YoutubePlayerActivity.this, "Some error occurred while fetching the requested video!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -87,6 +92,7 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
             public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
                 // log failures here
                 Log.d("DEBUG", youTubeInitializationResult.toString());
+                Toast.makeText(YoutubePlayerActivity.this, "Error occurred while initializing the YouTube player!", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -6,12 +6,15 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.agoenka.flicks.R;
 import org.agoenka.flicks.adapters.MovieArrayAdapter;
 import org.agoenka.flicks.models.Movie;
+import org.agoenka.flicks.network.MovieDbClient;
+import org.agoenka.flicks.utils.OsUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,10 +26,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnItemClick;
 import cz.msebera.android.httpclient.Header;
-
-import static org.agoenka.flicks.utils.NetworkUtils.getClient;
-import static org.agoenka.flicks.utils.NetworkUtils.getNowPlayingUrl;
-import static org.agoenka.flicks.utils.NetworkUtils.getParams;
 
 public class MovieActivity extends AppCompatActivity {
 
@@ -76,28 +75,33 @@ public class MovieActivity extends AppCompatActivity {
     }
 
     private void fetchMovies() {
-        getClient().get(getNowPlayingUrl(), getParams(), new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JSONArray movieJsonResults;
-                try {
-                    // extracting the movie results from the json response
-                    movieJsonResults = response.getJSONArray("results");
-                    movieAdapter.clear();
-                    movies.clear();
-                    movies.addAll(Movie.fromJsonArray(movieJsonResults));
-                    movieAdapter.notifyDataSetChanged();
-                    Log.d("DEBUG", movies.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        if (!OsUtils.isNetworkAvailable(MovieActivity.this)) {
+            Toast.makeText(MovieActivity.this, "Internet connectivity is not available. Please check your internet connection.", Toast.LENGTH_SHORT).show();
+        } else {
+            new MovieDbClient().getNowPlayingMovies(new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    JSONArray movieJsonResults;
+                    try {
+                        // extracting the movie results from the json response
+                        movieJsonResults = response.getJSONArray("results");
+                        movieAdapter.clear();
+                        movies.clear();
+                        movies.addAll(Movie.fromJsonArray(movieJsonResults));
+                        movieAdapter.notifyDataSetChanged();
+                        Log.d("DEBUG", movies.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                super.onFailure(statusCode, headers, responseString, throwable);
-            }
-        });
+                @Override
+                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                    super.onFailure(statusCode, headers, responseString, throwable);
+                    Toast.makeText(MovieActivity.this, "Error occurred while retrieving the movies.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
 }
