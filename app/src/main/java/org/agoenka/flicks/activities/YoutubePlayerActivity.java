@@ -26,6 +26,7 @@ import static org.agoenka.flicks.network.NetworkUtils.YOUTUBE_API_KEY;
 
 public class YoutubePlayerActivity extends YouTubeBaseActivity {
 
+    Movie movie;
     Video video;
 
     @BindView(R.id.ytPlayer) YouTubePlayerView playerView;
@@ -37,10 +38,16 @@ public class YoutubePlayerActivity extends YouTubeBaseActivity {
         ButterKnife.bind(this);
 
         video = null;
+        movie = null;
 
         if (getIntent() != null) {
-            Movie movie = (Movie) getIntent().getSerializableExtra("selectedMovie");
-            fetchVideos(movie.getId());
+            video = (Video) getIntent().getSerializableExtra("selectedVideo");
+            if (video == null) {
+                movie = (Movie) getIntent().getSerializableExtra("selectedMovie");
+                fetchVideos(movie.getId());
+            } else {
+                initYoutubePlayer();
+            }
         }
     }
 
